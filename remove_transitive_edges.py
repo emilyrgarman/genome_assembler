@@ -34,7 +34,55 @@ def simplify(G):
 
     S = deepcopy(G)
 
-    return S   
+    changed = True
+    while changed:
+        changed = False
+        edges_to_remove = []
+
+        for n1 in list(S.nodes()):
+            for n2 in list(S.edges[n1].keys()):
+                # check if there is an alternative path from n1 to n2 (does not use direct edge)
+                if has_alternative_path(S, n1, n2):
+                    edges_to_remove.append((n1, n2))
+
+        for n1, n2 in edges_to_remove:
+            # check if edge has been removed before
+            if S.has_edge(n1, n2):
+                if has_alternative_path(S, n1, n2):
+                    S.delete_edge(n1, n2)
+                    changed = True
+
+    return S
+
+def has_alternative_path(G, src, dst):
+    """
+    Return True if there is a path from src to dst that does not use the direct edge
+    between src and dst.
+    """
+    visited = set()
+    stack = []
+
+    # want paths of length >= 2
+    for neighbor in G.edges[src]:
+        if neighbor != dst:
+            stack.append(neighbor)
+        else: # src -> other node -> dst
+            pass
+
+    visited.add(src)
+
+    while stack:
+        node = stack.pop()
+        if node in visited:
+            continue
+        visited.add(node)
+        if node == dst:
+            return True
+        for neighbor in G.edges.get(node, {}):
+                if neighbor not in visited:
+                    stack.append(neighbor)
+
+    return False
 
 def main(filename):
     # read the graph from the input file
